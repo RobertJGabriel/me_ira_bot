@@ -6,7 +6,20 @@ import time
 
 import praw
 
+# Bot's tagline for owner contact and GitHub link
+SETRESPONSE = """
+    
 
+    
+--------------    
+*I am a bot*
+
+[Give my owner a whack of the spoon](https://www.reddit.com/message/compose?to=christianh10992&subject=&message=)
+
+[Source code](https://github.com/christian10992/me_ira_bot)"""
+
+
+# Establish reddit instance
 config = SafeConfigParser()
 config.read('config.ini')
 reddit = praw.Reddit(user_agent=config.get('Bot', 'user_agent'),
@@ -15,15 +28,13 @@ reddit = praw.Reddit(user_agent=config.get('Bot', 'user_agent'),
              username=config.get('Bot', 'username'),
              password=config.get('Bot', 'password'))
 
-print('1')
+
 # If code has not been run, store as empty list
 if not os.path.isfile('posts_replied_to.txt'):
     posts_replied_to = []
-    print('2')
 # Else read the file with the list and remove any empty values
 else:
     with open('posts_replied_to.txt', 'r') as f:
-        print('3')
         posts_replied_to = f.read()
         posts_replied_to = posts_replied_to.split("\n")
         posts_replied_to = list(filter(None, posts_replied_to))
@@ -32,7 +43,6 @@ else:
 # Get the top 3 posts from the subreddit and print their information
 subreddit = reddit.subreddit('me_ira')
 for submission in subreddit.hot(limit=3):
-    print('4')
     try:
         print('Title: ', submission.title)
     except:
@@ -48,20 +58,22 @@ for submission in subreddit.hot(limit=3):
 
 
     # Check to see if this post has been replied to
-    print('5')
     if submission.id not in posts_replied_to:
         comment = random.choice(list(open('me_ira.txt')))
-        submission.reply(comment)
+        submission.reply(comment + SETRESPONSE)
 
 
-    # Store the current id in the list
-    posts_replied_to.append(submission.id)
+        # Store the current id in the list
+        posts_replied_to.append(submission.id)
 
 
-    # Write updated list back to file
-    with open('posts_replied_to.txt', 'w') as f:
-        for post_id in posts_replied_to:
-            f.write(post_id + '\n')
+        # Write updated list back to file
+        with open('posts_replied_to.txt', 'w') as f:
+            for post_id in posts_replied_to:
+                f.write(post_id + '\n')
 
+        time.sleep(600) # Try next post 10 minutes after commenting)
+        
 
-    time.sleep(600)  # Sets bot to post at 10 minute intervals
+    else:
+        time.sleep(4)  # If post found has already been replied to, try next post in 4 seconds
